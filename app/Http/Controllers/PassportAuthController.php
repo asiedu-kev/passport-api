@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
 class PassportAuthController extends Controller
 {
     protected $successCode = 200;
@@ -11,18 +13,24 @@ class PassportAuthController extends Controller
 
     public function register(Request $request)
     {
-        $this->validate($request, [
+        $validation = Validator::make($request->all(),[
             'name' => 'required|min:4',
             'email' => 'required|email',
-            'password' => 'required|min:5'
+            'password' => 'required|min:5',
+            'confirm_password' => 'required|same:password'
         ]);
+
+        if ($validation->fails()){
+            return response()->json(["errors" => $validation->errors()], 404);
+        }
+
         $user = User::create([
             'name' =>$request->name,
             'email' =>$request->email,
             'password' =>bcrypt($request->password)]
         );
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken();
+        $token = $user->createToken('LaravelAuthApp')->accessToken;
         $message = "Enregistrement effectue !";
 
         return response()->json(['token' => $token,'message' => $message],$this->successCode);
@@ -35,7 +43,7 @@ class PassportAuthController extends Controller
             'password' => $request->password,
         ];
         if (auth()->attempt($data)){
-            $token = auth()->user()->createToken('LaravelAuthApp')->accessToken();
+            $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
             $message = "Connexion reussie !";
             return response()->json(['token' => $token, 'message' => $message],$this->successCode);
         }

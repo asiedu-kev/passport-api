@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Todo;
 
 class TodoController extends Controller
 {
@@ -22,7 +23,7 @@ class TodoController extends Controller
     {
         $todo = auth()->user()->todos()->find($id);
 
-        if(!todo) 
+        if(!$todo) 
         {
             $message = 'Tache non trouve';
             return response()->json(['error_message' => $message],$this->errorCode);
@@ -41,32 +42,19 @@ class TodoController extends Controller
         $todo->title = $request->title;
         $todo->description = $request->description;
 
-        if (auth()->user()->todos()->save()){
+        if (auth()->user()->todos()->save($todo)){
             return response()->json(['success' => true, 'todo' => $todo->toArray()], $this->successCode);
         }
         else {
             $error_message = 'Tache non ajoute';
             return response()->json(['success' => false, 'message' => $error_message], $this->errorCode);
         }
-
-       /* $user = auth()->user();
-        $unauthenticatedErrorMessage = 'Vous n\etes pas connecte';
-        if ($user->isAuthenticated())
-        {
-            $todo = Todo::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'user_id' => $user->id,
-            ]);
-            return response()->json(['success' => true, 'todo' => $todo->toArray()]);
-        }
-        return response()->json(['error_message' => $unauthenticatedErrorMessage],$errorCode);*/
     }
 
-    public function update(Request $request)
+    public function update(Request $request,$id)
     {
         $todo = auth()->user()->todos()->find($id);
-        if(!todo) 
+        if(!$todo) 
         {
             $message = 'Tache non trouve';
             return response()->json(['error_message' => $message],$this->errorCode);
@@ -87,7 +75,7 @@ class TodoController extends Controller
     public function destroy($id)
     {
         $todo = auth()->user()->todos()->find($id);
-        if(!todo) 
+        if(!$todo) 
         {
             $message = 'Tache non trouve';
             return response()->json(['error_message' => $message],$this->errorCode);
